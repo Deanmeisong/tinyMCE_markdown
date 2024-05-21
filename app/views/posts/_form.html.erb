@@ -1,0 +1,144 @@
+<%= form_with(model: post, local: true) do |form| %>
+  <% if post.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(post.errors.count, "error") %> prohibited this post from being saved:</h2>
+      <ul>
+        <% post.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :title %>
+    <%= form.text_field :title %>
+  </div>
+
+  <div class="field">
+    <%= form.label :content %>
+    <%= form.text_area :content, id: 'post_content' %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>
+<script src="https://cdn.tiny.cloud/1/ko2gk7u36z28afj8ta3b880vcni045ihj7rwnxwgq4jh4nc6/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/turndown/7.1.1/turndown.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    function markdownToHtml(markdown) {
+      var html = markdown;
+      html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+      html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+      html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+      html = html.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
+      html = html.replace(/^##### (.*$)/gim, '<h5>$1</h5>');
+      html = html.replace(/^###### (.*$)/gim, '<h6>$1</h6>');
+      html = html.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
+      html = html.replace(/\*(.*)\*/gim, '<i>$1</i>');
+      html = html.replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>");
+      html = html.replace(/~(.*)~/gim, "<sub>$1</sub>");
+      html = html.replace(/\^(.*)\^/gim, "<sup>$1</sup>");
+      return html.trim();
+    }
+
+    var turndownService = new TurndownService();
+    turndownService.options.headingStyle = 'atx'; // Use ATX style for headers
+    turndownService.options.emDelimiter = '*'; // Use asterisks for italic text
+
+    turndownService.addRule('sub', {
+      filter: 'sub',
+      replacement: function(content) {
+        return '~' + content + '~';
+      }
+    });
+
+    turndownService.addRule('sup', {
+      filter: 'sup',
+      replacement: function(content) {
+        return '^' + content + '^';
+      }
+    });
+
+    tinymce.init({
+      selector: '#post_content',
+      plugins: 'code',
+      toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | outdent indent | code | convertToHtml | convertToMarkdown | maleSign | femaleSign | plusMinus | enDash | degree | multiplication',
+      setup: function(editor) {
+        var isConvertToHtmlClickable = true;
+        var isConvertToMarkdownClickable = true;
+
+        editor.ui.registry.addButton('convertToHtml', {
+          text: 'Convert to HTML',
+          onAction: function() {
+            if (isConvertToHtmlClickable) {
+              var content = editor.getContent({ format: 'text' });
+              var convertedContent = markdownToHtml(content);
+              editor.setContent(convertedContent);
+              isConvertToHtmlClickable = false;
+              isConvertToMarkdownClickable = true;
+            }
+          }
+        });
+
+        editor.ui.registry.addButton('convertToMarkdown', {
+          text: 'Convert to Markdown',
+          onAction: function() {
+            if (isConvertToMarkdownClickable) {
+              var content = editor.getContent();
+              var convertedContent = turndownService.turndown(content);
+              editor.setContent(convertedContent.replace(/\n/g, '<br/>'));
+              isConvertToMarkdownClickable = false;
+              isConvertToHtmlClickable = true;
+            }
+          }
+        });
+
+        editor.ui.registry.addButton('maleSign', {
+          text: '♂',
+          onAction: function() {
+            editor.insertContent('♂');
+          }
+        });
+
+        editor.ui.registry.addButton('femaleSign', {
+          text: '♀',
+          onAction: function() {
+            editor.insertContent('♀');
+          }
+        });
+
+        editor.ui.registry.addButton('plusMinus', {
+          text: '±',
+          onAction: function() {
+            editor.insertContent('±');
+          }
+        });
+
+        editor.ui.registry.addButton('enDash', {
+          text: '–',
+          onAction: function() {
+            editor.insertContent('–');
+          }
+        });
+
+        editor.ui.registry.addButton('degree', {
+          text: '°',
+          onAction: function() {
+            editor.insertContent('°');
+          }
+        });
+
+        editor.ui.registry.addButton('multiplication', {
+          text: '×',
+          onAction: function() {
+            editor.insertContent('×');
+          }
+        });
+      },
+      height: 500
+    });
+  });
+</script>
