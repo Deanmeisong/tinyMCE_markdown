@@ -41,8 +41,10 @@
       html = html.replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>");
       html = html.replace(/~(.*)~/gim, "<sub>$1</sub>");
       html = html.replace(/\^(.*)\^/gim, "<sup>$1</sup>");
+      html = html.replace(/\n/g, '<br>'); // Add this line to replace newlines with <br>
       return html.trim();
     }
+    
 
     var turndownService = new TurndownService();
     turndownService.options.headingStyle = 'atx'; // Use ATX style for headers
