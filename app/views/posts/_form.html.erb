@@ -24,10 +24,12 @@
     <%= form.submit %>
   </div>
 <% end %>
-<script src="https://cdn.tiny.cloud/1/ko2gk7u36z28afj8ta3b880vcni045ihj7rwnxwgq4jh4nc6/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/turndown/7.1.1/turndown.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
+
+<script src="https://cdn.tiny.cloud/1/ko2gk7u36z28afj8ta3b880vcni045ihj7rwnxwgq4jh4nc6/tinymce/5/tinymce.min.js" referrerpolicy="origin" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/turndown/7.1.1/turndown.js" defer></script>
+
+<script type="module">
+  document.addEventListener("DOMContentLoaded", function() {
     function markdownToHtml(markdown) {
       var html = markdown;
       html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
@@ -44,7 +46,6 @@
       html = html.replace(/\n/g, '<br>'); // Add this line to replace newlines with <br>
       return html.trim();
     }
-    
 
     var turndownService = new TurndownService();
     turndownService.options.headingStyle = 'atx'; // Use ATX style for headers
@@ -64,83 +65,93 @@
       }
     });
 
-    tinymce.init({
-      selector: '#post_content',
-      plugins: 'code',
-      toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | outdent indent | code | convertToHtml | convertToMarkdown | maleSign | femaleSign | plusMinus | enDash | degree | multiplication',
-      setup: function(editor) {
-        var isConvertToHtmlClickable = true;
-        var isConvertToMarkdownClickable = true;
+    function initializeEditor() {
+      tinymce.init({
+        selector: '#post_content',
+        plugins: 'code',
+        toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | outdent indent | code | convertToHtml | convertToMarkdown | maleSign | femaleSign | plusMinus | enDash | degree | multiplication',
+        setup: function(editor) {
+          var isConvertToHtmlClickable = true;
+          var isConvertToMarkdownClickable = true;
 
-        editor.ui.registry.addButton('convertToHtml', {
-          text: 'Convert to HTML',
-          onAction: function() {
-            if (isConvertToHtmlClickable) {
-              var content = editor.getContent({ format: 'text' });
-              var convertedContent = markdownToHtml(content);
-              editor.setContent(convertedContent);
-              isConvertToHtmlClickable = false;
-              isConvertToMarkdownClickable = true;
+          editor.ui.registry.addButton('convertToHtml', {
+            text: 'Convert to HTML',
+            onAction: function() {
+              if (isConvertToHtmlClickable) {
+                var content = editor.getContent({ format: 'text' });
+                var convertedContent = markdownToHtml(content);
+                editor.setContent(convertedContent);
+                isConvertToHtmlClickable = false;
+                isConvertToMarkdownClickable = true;
+              }
             }
-          }
-        });
+          });
 
-        editor.ui.registry.addButton('convertToMarkdown', {
-          text: 'Convert to Markdown',
-          onAction: function() {
-            if (isConvertToMarkdownClickable) {
-              var content = editor.getContent();
-              var convertedContent = turndownService.turndown(content);
-              editor.setContent(convertedContent.replace(/\n/g, '<br/>'));
-              isConvertToMarkdownClickable = false;
-              isConvertToHtmlClickable = true;
+          editor.ui.registry.addButton('convertToMarkdown', {
+            text: 'Convert to Markdown',
+            onAction: function() {
+              if (isConvertToMarkdownClickable) {
+                var content = editor.getContent();
+                var convertedContent = turndownService.turndown(content);
+                editor.setContent(convertedContent.replace(/\n/g, '<br/>'));
+                isConvertToMarkdownClickable = false;
+                isConvertToHtmlClickable = true;
+              }
             }
-          }
-        });
+          });
 
-        editor.ui.registry.addButton('maleSign', {
-          text: '♂',
-          onAction: function() {
-            editor.insertContent('♂');
-          }
-        });
+          editor.ui.registry.addButton('maleSign', {
+            text: '♂',
+            onAction: function() {
+              editor.insertContent('♂');
+            }
+          });
 
-        editor.ui.registry.addButton('femaleSign', {
-          text: '♀',
-          onAction: function() {
-            editor.insertContent('♀');
-          }
-        });
+          editor.ui.registry.addButton('femaleSign', {
+            text: '♀',
+            onAction: function() {
+              editor.insertContent('♀');
+            }
+          });
 
-        editor.ui.registry.addButton('plusMinus', {
-          text: '±',
-          onAction: function() {
-            editor.insertContent('±');
-          }
-        });
+          editor.ui.registry.addButton('plusMinus', {
+            text: '±',
+            onAction: function() {
+              editor.insertContent('±');
+            }
+          });
 
-        editor.ui.registry.addButton('enDash', {
-          text: '–',
-          onAction: function() {
-            editor.insertContent('–');
-          }
-        });
+          editor.ui.registry.addButton('enDash', {
+            text: '–',
+            onAction: function() {
+              editor.insertContent('–');
+            }
+          });
 
-        editor.ui.registry.addButton('degree', {
-          text: '°',
-          onAction: function() {
-            editor.insertContent('°');
-          }
-        });
+          editor.ui.registry.addButton('degree', {
+            text: '°',
+            onAction: function() {
+              editor.insertContent('°');
+            }
+          });
 
-        editor.ui.registry.addButton('multiplication', {
-          text: '×',
-          onAction: function() {
-            editor.insertContent('×');
-          }
-        });
-      },
-      height: 500
+          editor.ui.registry.addButton('multiplication', {
+            text: '×',
+            onAction: function() {
+              editor.insertContent('×');
+            }
+          });
+        },
+        height: 500
+      });
+    }
+
+    // Initialize the editor when the DOM is loaded
+    initializeEditor();
+
+    // Reinitialize the editor on Turbo navigation events
+    document.addEventListener("turbo:load", function() {
+      initializeEditor();
     });
   });
 </script>
